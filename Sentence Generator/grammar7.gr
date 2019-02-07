@@ -1,0 +1,214 @@
+# Symbols in the grammar are case-sensitive.
+# 
+# This grammar uses a convention that
+#    - terminals are lowercase          (president)
+#    - preterminals are capitalized     (Noun)
+#    - other nonterminals are all-caps  (NP)
+# 
+# This convention just makes grammars more readable to humans.  Thus:
+#
+#    - When *you* are writing grammars in questions 3 and 6, you should 
+#      follow this convention unless you have a good reason not to.  
+#
+#    - But your *program* should still work with grammars that don't
+#      follow this convention.  So how can your program reliably tell
+#      the difference between terminal and nonterminal symbols?  If
+#      there is at least one rule for rewriting a symbol, then that
+#      symbol is a nonterminal and should be rewritten.
+#
+# 2 Phenomena added: - Yes/No Questions (7b)    - Singular vs Plural Agreement (7e)
+#######################
+
+# Rules for creating full sentences.
+
+1	ROOT	S .
+1	ROOT	S !
+1	ROOT	is it true that S ?     # mixing terminals and nonterminals is ok.
+1   ROOT    it  VP_effect that    S .
+1   ROOT    that    S  .
+1   ROOT    Q  ?
+
+
+# The basic grammar rules.  Here's what the abbreviations stand for:
+#    S  = sentence
+#    NP = noun phrase
+#    VP = verb phrase
+#    PP = prepositional phrase
+#    Det = determiner (sometimes called "article")
+#    Prep = preposition
+#    Adj = adjective
+#    Q = question
+
+# Grammar rule for singular vs plural agreement
+1	S	NP_SING VP_SING
+1	S	NP_PLUR VP_PLUR
+
+# Grammar rule for Yes/No Questions
+1   Q   Aux_SING_PROG   NP_SING VP_SING_PROG
+1   Q   Aux_PLUR_PROG NP_PLUR VP_PLUR_PROG
+1   Q   Aux_SING_PRES NP_SING VP_SING_PRES
+1   Q   Aux_PLUR_PRES NP_PLUR VP_PLUR_PRES
+
+# Verb phrase progressive
+1   VP_SING_PROG Verb_PROG NP_SING
+1   VP_SING_PROG Verb_PROG NP_PLUR
+1   VP_PLUR_PROG Verb_PROG NP_SING
+1   VP_PLUR_PROG Verb_PROG NP_PLUR
+
+#Verb phrase present
+1   VP_SING_PRES    Verb_PLUR_PRES NP_SING
+1   VP_SING_PRES    Verb_PLUR_PRES NP_PLUR
+1   VP_PLUR_PRES    Verb_SING_PRES NP_SING
+1   VP_PLUR_PRES    Verb_SING_PRES NP_PLUR
+
+1	VP_SING	Verb_SING NP_SING
+1	VP_SING	Verb_SING NP_PLUR
+0.3 VP_SING  Verb_SING and VP_SING         # lower probability since VP can recurse on this rule
+0.5 VP  Verb_int_SING
+0.5 VP  Verb_prep PP
+0.2 VP  Verb_active    that   S # avoid thought that thought that thought that
+1   VP_effect Verb_effect  NP_SING
+1   VP_effect Verb_effect  NP_PLUR
+
+1   VP_PLUR_PRES Verb_PLUR_PRES NP
+1	VP_PLUR	Verb_PLUR NP_SING
+1	VP_PLUR	Verb_PLUR NP_PLUR
+0.3 VP_PLUR Verb_PLUR and VP_PLUR         # lower probability since VP can recurse on this rule
+
+3	NP_SING	Det_SING Noun_SING
+1	NP_SING_PREP Det_SING Noun_SING       # to avoid prep pronoun
+3	NP_PLUR	Det_PLUR Noun_PLUR
+
+0.7	NP_SING	NP_SING PP
+0.7 NP_PLUR NP_PLUR PP
+1   NP_SING  Proper_Noun
+0.25 NP_PLUR  NP_SING and NP_SING
+0.25 NP_PLUR  NP_PLUR and NP_PLUR
+0.25 NP_PLUR  NP_PLUR and NP_SING
+0.25 NP_PLUR  NP_SING and NP_PLUR
+
+0.2	PP	Prep NP_PLUR
+0.2	PP	Prep NP_SING_PREP
+
+2	Noun_SING	Adj Noun_SING
+2   Noun_PLUR   Adj Noun_PLUR
+2   Adj     Adv Adj
+
+# Vocabulary.  Your program can see that "ate" is a terminal
+# symbol because there exists no rule for rewriting it.
+# Any symbol that can rewrite as a terminal (or a string of 
+# terminals, like "chief of staff") is called a "preterminal."  Notice 
+# that a preterminal is a special kind of nonterminal.
+
+#past tense verbs
+1	Verb_PLUR	ate
+1	Verb_SING   ate
+1	Verb_PLUR	wanted
+1	Verb_SING_	wanted
+1	Verb_PLUR	kissed
+1	Verb_PLUR	understood
+1	Verb_PLUR	pickled
+1   Verb_PLUR    perplexed
+1	Verb_SING	kissed
+1	Verb_SING	understood
+1	Verb_SING	pickled
+1   Verb_SING    perplexed
+
+#singular verbs
+1   Verb_SING   eats
+1   Verb_SING   chooses
+1   Verb_SING   understands
+1   Verb_SING   loves
+1   Verb_SING   wants
+
+#plural verbs
+1   Verb_PLUR   eat
+1   Verb_PLUR   choose
+1   Verb_PLUR   understand
+1   Verb_PLUR   love
+1   Verb_PLUR   want
+
+#special verbs
+1   Verb_prep    worked
+1   Verb_int   sighed           # intransitive verb
+1   Verb_active thought         # followed by that
+1   Verb_effect perplexed       # verb that has the logic of "x caused y"
+1   Verb_effect confused       # verb that has the logic of "x caused y"
+1   Verb_effect awed            # verb that has the logic of "x caused y"
+
+#present tense verbs
+1   Verb_SING_PRES chooses
+1   Verb_SING_PRES   eats
+1   Verb_SING_PRES   understands
+1   Verb_SING_PRES   loves
+1   Verb_SING_PRES   wants
+
+1   Verb_PLUR_PRES choose
+1   Verb_PLUR_PRES   eat
+1   Verb_PLUR_PRES   understand
+1   Verb_PLUR_PRES   love
+1   Verb_PLUR_PRES   want
+
+#progressive verbs
+1   Verb_PROG eating
+1   Verb_PROG understanding
+1   Verb_PROG loving
+1   Verb_PROG hating
+1   Verb_PROG wanting
+1   Verb_PROG choosing
+1   Verb_PROG thinking
+1   Verb_PROG working
+
+
+1	Det_SING    the
+1	Det_SING	a
+1	Det_SING	every
+1	Det_PLUR    the
+1   Det_PLUR    all
+1   Det_PLUR    some 
+
+1	Noun_SING	president
+1	Noun_SING	sandwich
+1	Noun_SING	pickle
+1	Noun_SING	chief of staff
+1	Noun_SING	floor
+1   Noun_SING   proposal
+1   Noun_SING   desk
+
+1	Noun_PLUR	presidents
+1	Noun_PLUR	sandwiches
+1	Noun_PLUR	pickles
+1	Noun_PLUR	floors
+1   Noun_PLUR   proposals
+1   Noun_PLUR   desks
+1   Noun_PLUR   citizens
+1   Noun_PLUR   people
+
+1   Proper_Noun Sally
+
+1	Adj	fine
+1	Adj	delicious
+1	Adj	perplexed
+1	Adj	pickled
+
+1	Prep	with
+1	Prep	on
+1	Prep	under
+1	Prep	in
+
+1   Adv very                       
+
+# Auxiliary verbs for Yes/No questions
+1   Aux_SING_PROG is
+1   Aux_SING_PROG was
+1   Aux_PLUR_PROG are
+1   Aux_PLUR_PROG were
+1   Aux_SING_PRES will
+1   Aux_SING_PRES did
+1   Aux_SING_PRES can
+1   Aux_SING_PRES could
+1   Aux_SING_PRES should
+1   Aux_SING_PRES would
+1   Aux_SING_PRES shall
+1   Aux_SING_PRES does 
+1   Aux_PLUR_PRES do
